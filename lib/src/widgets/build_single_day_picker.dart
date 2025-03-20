@@ -91,7 +91,7 @@ class _BuildSingleDayPickerState extends State<BuildSingleDayPicker> {
               backgroundColor: AppColors.primaryColorOrange,
               height: screenHeight(context, dividedBy: 22),
               child: null,
-              txt: "Save",
+              txt: "Done",
               onTap: () {
                 Navigator.pop(context, selectedDate);
               },

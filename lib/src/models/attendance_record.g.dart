@@ -19,17 +19,20 @@ class AttendanceRecordAdapter extends TypeAdapter<AttendanceRecord> {
     return AttendanceRecord(
       date: fields[0] as DateTime,
       absentStudents: (fields[1] as List).cast<Student>(),
+      presentStudents: (fields[2] as List).cast<Student>(),
     );
   }
 
   @override
   void write(BinaryWriter writer, AttendanceRecord obj) {
     writer
-      ..writeByte(2)
+      ..writeByte(3)
       ..writeByte(0)
       ..write(obj.date)
       ..writeByte(1)
-      ..write(obj.absentStudents);
+      ..write(obj.absentStudents)
+      ..writeByte(2)
+      ..write(obj.presentStudents);
   }
 
   @override

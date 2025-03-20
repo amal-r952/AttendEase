@@ -1,5 +1,4 @@
 import 'package:hive/hive.dart';
-
 import 'student.dart';
 
 part 'attendance_record.g.dart';
@@ -12,8 +11,12 @@ class AttendanceRecord extends HiveObject {
   @HiveField(1)
   List<Student> absentStudents;
 
+  @HiveField(2)
+  List<Student> presentStudents; 
+
   AttendanceRecord({
     required this.date,
     required this.absentStudents,
+    required this.presentStudents, 
   });
 }

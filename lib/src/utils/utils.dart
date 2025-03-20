@@ -5,6 +5,10 @@ import 'package:url_launcher/url_launcher.dart';
 
 class Utils {}
 
+String formatDate(DateTime date) {
+  return DateFormat('dd-MM-yyyy').format(date);
+}
+
 Size screenSize(BuildContext context) {
   return MediaQuery.of(context).size;
 }
