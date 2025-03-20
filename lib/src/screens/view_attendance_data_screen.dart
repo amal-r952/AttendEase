@@ -113,49 +113,83 @@ class _ViewAttendanceDataScreenState extends State<ViewAttendanceDataScreen> {
     });
   }
 
-  Future<void> _load100Present() async {
-    if (startDate == null || endDate == null) return;
-    int totalDays = endDate!.difference(startDate!).inDays + 1;
-    Map<int, int> presentCount = {};
-    for (var record in attendanceBox.values.where((record) =>
-        record.date.isAfter(startDate!.subtract(const Duration(days: 1))) &&
-        record.date.isBefore(endDate!.add(const Duration(days: 1))))) {
-      for (var student in record.presentStudents) {
-        presentCount[student.studentId] =
-            (presentCount[student.studentId] ?? 0) + 1;
-      }
-    }
+Future<void> _load100Present() async {
+  if (startDate == null || endDate == null) return;
+
+  // Fetch all recorded attendance dates within the range
+  var recordedDays = attendanceBox.values
+      .where((record) =>
+          record.date.isAfter(startDate!.subtract(const Duration(days: 1))) &&
+          record.date.isBefore(endDate!.add(const Duration(days: 1))))
+      .map((record) => record.date)
+      .toSet(); // Using Set to avoid duplicates
+
+  int actualRecordedDays = recordedDays.length; // Count only actual recorded days
+
+  if (actualRecordedDays == 0) {
     setState(() {
-      students = presentCount.entries
-          .where((entry) => entry.value == totalDays)
-          .map((entry) => attendanceBox.values
-              .expand((record) => record.presentStudents)
-              .firstWhere((student) => student.studentId == entry.key))
-          .toList();
+      students = [];
     });
+    return;
   }
 
-  Future<void> _load100Absent() async {
-    if (startDate == null || endDate == null) return;
-    int totalDays = endDate!.difference(startDate!).inDays + 1;
-    Map<int, int> absentCount = {};
-    for (var record in attendanceBox.values.where((record) =>
-        record.date.isAfter(startDate!.subtract(const Duration(days: 1))) &&
-        record.date.isBefore(endDate!.add(const Duration(days: 1))))) {
-      for (var student in record.absentStudents) {
-        absentCount[student.studentId] =
-            (absentCount[student.studentId] ?? 0) + 1;
-      }
+  Map<int, int> presentCount = {};
+  for (var record in attendanceBox.values.where((record) =>
+      recordedDays.contains(record.date))) {
+    for (var student in record.presentStudents) {
+      presentCount[student.studentId] =
+          (presentCount[student.studentId] ?? 0) + 1;
     }
-    setState(() {
-      students = absentCount.entries
-          .where((entry) => entry.value == totalDays)
-          .map((entry) => attendanceBox.values
-              .expand((record) => record.absentStudents)
-              .firstWhere((student) => student.studentId == entry.key))
-          .toList();
-    });
   }
+
+  setState(() {
+    students = presentCount.entries
+        .where((entry) => entry.value == actualRecordedDays) // Use actualRecordedDays
+        .map((entry) => attendanceBox.values
+            .expand((record) => record.presentStudents)
+            .firstWhere((student) => student.studentId == entry.key))
+        .toList();
+  });
+}
+
+Future<void> _load100Absent() async {
+  if (startDate == null || endDate == null) return;
+
+  var recordedDays = attendanceBox.values
+      .where((record) =>
+          record.date.isAfter(startDate!.subtract(const Duration(days: 1))) &&
+          record.date.isBefore(endDate!.add(const Duration(days: 1))))
+      .map((record) => record.date)
+      .toSet();
+
+  int actualRecordedDays = recordedDays.length;
+
+  if (actualRecordedDays == 0) {
+    setState(() {
+      students = [];
+    });
+    return;
+  }
+
+  Map<int, int> absentCount = {};
+  for (var record in attendanceBox.values.where((record) =>
+      recordedDays.contains(record.date))) {
+    for (var student in record.absentStudents) {
+      absentCount[student.studentId] =
+          (absentCount[student.studentId] ?? 0) + 1;
+    }
+  }
+
+  setState(() {
+    students = absentCount.entries
+        .where((entry) => entry.value == actualRecordedDays)
+        .map((entry) => attendanceBox.values
+            .expand((record) => record.absentStudents)
+            .firstWhere((student) => student.studentId == entry.key))
+        .toList();
+  });
+}
+
 
   Future<void> _pickDate(BuildContext context) async {
     DateTime? picked = await showDialog<DateTime>(
